@@ -11,6 +11,8 @@ This Github Action performs certain commands when an issue or pull request is co
 - Reopen (`open` option)
 - Lock with an optional lock reason (`lock` and `lockReason` options)
 - Unlock (`unlock` option)
+- Pin (`pin` option, pin an issue)
+- UnPin (`unpin` option, unpin an issue)
 - Add or remove labels (`labels` option), label prefixed with `-` will be removed, other label will be added.
 
 ## Usage
@@ -35,7 +37,7 @@ jobs:
 ### Options
 
 - `GITHUB_TOKEN`: Your GitHub token for authentication.
-- `CONFIG_FILE`: Path to command config file, specify a yaml file with the following structure: 
+- `CONFIG_FILE`: Path to command config file, specify a yaml file with the following structure:
 
 ```yml
 # Specify commands for issues and pull requests

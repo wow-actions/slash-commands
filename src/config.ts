@@ -11,6 +11,8 @@ export namespace Config {
     lock?: boolean
     unlock?: boolean
     lockReason?: LockReason
+    pin?: boolean
+    unpin?: boolean
     comment?: string | string[]
     reactions?: string | string[]
     labels?: string | string[]

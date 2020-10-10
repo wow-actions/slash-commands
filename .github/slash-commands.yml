@@ -25,6 +25,12 @@ unlabel:
   labels: -static-label
 
 issues:
+  pin:
+    pin: true
+
+  unpin:
+    unpin: true
+
   feature:
     close: true
     comment: >

@@ -147,4 +147,37 @@ export namespace Util {
       octokit.issues.removeLabel({ ...params, name })
     })
   }
+
+  export async function pin(
+    octokit: ReturnType<typeof getOctokit>,
+    pinned: boolean,
+  ) {
+    const mutation = pinned
+      ? `mutation ($input: PinIssueInput!) {
+          pinIssue(input: $input) {
+            issue {
+              title
+            }
+          }
+        }`
+      : `mutation ($input: UnpinIssueInput!) {
+          unpinIssue(input: $input) {
+            issue {
+              title
+            }
+          }
+        }`
+
+    const context = github.context
+    const payload = (context.payload.issue || context.payload.pull_request)!
+    return octokit.graphql(mutation, {
+      input: {
+        issueId: payload.number,
+        clientMutationId: 'top3 pinned',
+      },
+      headers: {
+        Accept: 'application/vnd.github.elektra-preview',
+      },
+    })
+  }
 }

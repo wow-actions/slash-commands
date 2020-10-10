@@ -58,10 +58,20 @@ export namespace Action {
         unlock,
         lockReason,
         labels,
+        pin,
+        unpin,
       } = actions
 
       const data = { args, input: args.join(' ') }
       const params = { ...context.repo, issue_number: payload.number }
+
+      if (pin) {
+        await Util.pin(octokit, true)
+      }
+
+      if (unpin) {
+        await Util.pin(octokit, false)
+      }
 
       if (comment) {
         await Util.comment(octokit, comment, reactions, data)
