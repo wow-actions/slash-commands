@@ -3,12 +3,14 @@ import yaml from 'js-yaml'
 import { Util } from './util'
 
 export namespace Config {
+  export type LockReason = 'off-topic' | 'too heated' | 'resolved' | 'spam'
+
   interface Actions {
     close?: boolean
     open?: boolean
     lock?: boolean
     unlock?: boolean
-    lockReason?: string
+    lockReason?: LockReason
     comment?: string | string[]
     reactions?: string | string[]
     labels?: string | string[]

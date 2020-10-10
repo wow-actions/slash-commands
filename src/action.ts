@@ -92,11 +92,7 @@ export namespace Action {
       }
 
       if (lock && !payload.locked) {
-        await Util.lockIssue(
-          octokit,
-          context,
-          lockReason ? mustache.render(lockReason, data) : lockReason,
-        )
+        await Util.lockIssue(octokit, context, lockReason)
       }
 
       if (unlock && payload.locked) {

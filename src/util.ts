@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import { Context } from '@actions/github/lib/context'
 import mustache from 'mustache'
 import random from 'lodash.random'
+import { Config } from './config'
 
 export namespace Util {
   export function getOctokit() {
@@ -54,20 +55,20 @@ export namespace Util {
   export async function lockIssue(
     octokit: ReturnType<typeof getOctokit>,
     context: Context,
-    lockReason?: string,
+    lockReason?: Config.LockReason,
   ): Promise<any> {
     const payload = context.payload.issue || context.payload.pull_request
     if (payload) {
       const params = { ...context.repo, issue_number: payload.number }
       return lockReason
-        ? octokit.github.issues.lock({
+        ? octokit.issues.lock({
             ...params,
             lock_reason: lockReason,
             headers: {
               Accept: 'application/vnd.github.sailor-v-preview+json',
             },
           })
-        : octokit.github.issues.lock({ ...params })
+        : octokit.issues.lock({ ...params })
     }
   }
 
@@ -79,7 +80,7 @@ export namespace Util {
     const payload = context.payload.issue || context.payload.pull_request
     if (payload && payload.locked) {
       const params = { ...context.repo, issue_number: payload.number }
-      const lockReason = payload.active_lock_reason as string
+      const lockReason = payload.active_lock_reason as Config.LockReason
       await octokit.issues.unlock({ ...params })
       await callback()
       await lockIssue(octokit, context, lockReason)
