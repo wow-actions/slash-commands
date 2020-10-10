@@ -22,7 +22,8 @@ label:
     - '{{ args.2 }}'
 
 unlabel:
-  labels: -static-label
+  labels: 
+    - -static-label
 
 issues:
   pin:
