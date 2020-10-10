@@ -86,9 +86,6 @@ export namespace Action {
       }
 
       if (lock && !payload.locked) {
-        core.info(
-          `Lock issue${lockReason ? ` with reason: ${lockReason}` : ''}`,
-        )
         await octokit.issues.lock({
           ...params,
           lock_reason: lockReason,

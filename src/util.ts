@@ -125,12 +125,15 @@ export namespace Util {
     const payload = (context.payload.issue || context.payload.pull_request)!
     const params = { ...context.repo, issue_number: payload.number }
     const process = (raw: string) => {
-      const label = mustache.render(raw, data)
-      if (label.startsWith('-')) {
-        labelsToRemove.push(label.substr(1))
-      } else {
-        labelsToAdd.push(label)
+      const handle = (label: string) => {
+        if (label.startsWith('-')) {
+          labelsToRemove.push(label.substr(1))
+        } else {
+          labelsToAdd.push(label)
+        }
       }
+
+      mustache.render(raw, data).split(/\s+/).forEach(handle)
     }
 
     if (Array.isArray(labels)) {

@@ -17,6 +17,7 @@ unheated:
 label:
   labels:
     - static-label
+    - 'label-1 label-2'
     - '{{ args.0 }}'
     - '{{ args.1 }}'
     - '{{ args.2 }}'

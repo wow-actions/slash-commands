@@ -94,6 +94,8 @@ label:
   labels:
     # Add custom label
     - static-label
+    # Space separated labels
+    - 'label-1 label-2'
     # Add labels from args
     - '{{ args.0 }}'
     - '{{ args.1 }}'
