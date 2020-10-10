@@ -102,6 +102,9 @@ export namespace Action {
       if (labels) {
         await Util.label(octokit, labels, data)
       }
+
+      core.setOutput('command', command)
+      core.setOutput('args', args.join(' '))
     } catch (e) {
       core.error(e)
       core.setFailed(e.message)

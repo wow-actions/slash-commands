@@ -152,6 +152,7 @@ export namespace Util {
     octokit: ReturnType<typeof getOctokit>,
     pinned: boolean,
   ) {
+    // https://developer.github.com/v4/input_object/pinissueinput/
     const mutation = pinned
       ? `mutation ($input: PinIssueInput!) {
           pinIssue(input: $input) {
