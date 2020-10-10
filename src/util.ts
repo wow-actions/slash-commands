@@ -1,11 +1,27 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { Context } from '@actions/github/lib/context'
 import mustache from 'mustache'
 import random from 'lodash.random'
 import { Config } from './config'
+import { Reaction } from './reaction'
 
 export namespace Util {
+  // https://regex101.com/r/3PkLfT/1
+  const TOKENISE_REGEX = /\S+="[^"\\]*(?:\\.[^"\\]*)*"|"[^"\\]*(?:\\.[^"\\]*)*"|\S+/g
+
+  export function tokeniseCommand(command: string) {
+    let matches
+    const output: string[] = []
+    while ((matches = TOKENISE_REGEX.exec(command))) {
+      output.push(matches[0])
+    }
+
+    return {
+      command: output[0],
+      args: output.slice(1),
+    }
+  }
+
   export function getOctokit() {
     const token = core.getInput('GITHUB_TOKEN', { required: true })
     return github.getOctokit(token)
@@ -52,56 +68,83 @@ export namespace Util {
     }
   }
 
-  export async function lockIssue(
-    octokit: ReturnType<typeof getOctokit>,
-    context: Context,
-    lockReason?: Config.LockReason,
-  ): Promise<any> {
-    const payload = context.payload.issue || context.payload.pull_request
-    if (payload) {
-      const params = { ...context.repo, issue_number: payload.number }
-      return lockReason
-        ? octokit.issues.lock({
-            ...params,
-            lock_reason: lockReason,
-            headers: {
-              Accept: 'application/vnd.github.sailor-v-preview+json',
-            },
-          })
-        : octokit.issues.lock({ ...params })
-    }
-  }
-
   export async function ensureUnlock(
     octokit: ReturnType<typeof getOctokit>,
-    context: Context,
     callback: (() => void) | (() => Promise<any>),
   ) {
+    const context = github.context
     const payload = context.payload.issue || context.payload.pull_request
     if (payload && payload.locked) {
       const params = { ...context.repo, issue_number: payload.number }
       const lockReason = payload.active_lock_reason as Config.LockReason
       await octokit.issues.unlock({ ...params })
       await callback()
-      await lockIssue(octokit, context, lockReason)
+      await octokit.issues.lock({
+        ...params,
+        lock_reason: lockReason,
+      })
     } else {
       await callback()
     }
   }
 
-  // https://regex101.com/r/3PkLfT/1
-  const TOKENISE_REGEX = /\S+="[^"\\]*(?:\\.[^"\\]*)*"|"[^"\\]*(?:\\.[^"\\]*)*"|\S+/g
+  export async function comment(
+    octokit: ReturnType<typeof getOctokit>,
+    content: string | string[],
+    reactions: string | string[] | undefined,
+    data: any,
+  ) {
+    const context = github.context
+    const payload = (context.payload.issue || context.payload.pull_request)!
+    const params = { ...context.repo, issue_number: payload.number }
+    const body = pickComment(content, {
+      ...data,
+      author: payload.user.login,
+    })
 
-  export function tokeniseCommand(command: string) {
-    let matches
-    const output: string[] = []
-    while ((matches = TOKENISE_REGEX.exec(command))) {
-      output.push(matches[0])
+    return ensureUnlock(octokit, async () => {
+      const { data } = await octokit.issues.createComment({
+        ...params,
+        body,
+      })
+
+      if (reactions) {
+        await Reaction.add(octokit, data.id, reactions)
+      }
+    })
+  }
+
+  export async function label(
+    octokit: ReturnType<typeof getOctokit>,
+    labels: string | string[],
+    data: any,
+  ) {
+    const labelsToAdd: string[] = []
+    const labelsToRemove: string[] = []
+    const context = github.context
+    const payload = (context.payload.issue || context.payload.pull_request)!
+    const params = { ...context.repo, issue_number: payload.number }
+    const process = (raw: string) => {
+      const label = mustache.render(raw, data)
+      if (label.startsWith('-')) {
+        labelsToRemove.push(label.substr(1))
+      } else {
+        labelsToAdd.push(label)
+      }
     }
 
-    return {
-      command: output[0],
-      args: output.slice(1),
+    if (Array.isArray(labels)) {
+      labels.forEach((item) => process(item))
+    } else {
+      process(labels)
     }
+
+    if (labelsToAdd.length) {
+      octokit.issues.addLabels({ ...params, labels: labelsToAdd })
+    }
+
+    labelsToRemove.forEach((name) => {
+      octokit.issues.removeLabel({ ...params, name })
+    })
   }
 }

@@ -1,9 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import mustache from 'mustache'
 import { Util } from './util'
 import { Config } from './config'
-import { Reaction } from './reaction'
 
 export namespace Action {
   export async function run() {
@@ -66,21 +64,7 @@ export namespace Action {
       const params = { ...context.repo, issue_number: payload.number }
 
       if (comment) {
-        const body = Util.pickComment(comment, {
-          ...data,
-          author: payload.user.login,
-        })
-
-        await Util.ensureUnlock(octokit, context, async () => {
-          const { data } = await octokit.issues.createComment({
-            ...params,
-            body,
-          })
-
-          if (reactions) {
-            Reaction.add(octokit, data.id, reactions)
-          }
-        })
+        await Util.comment(octokit, comment, reactions, data)
       }
 
       if (open && payload.state === 'closed') {
@@ -92,7 +76,13 @@ export namespace Action {
       }
 
       if (lock && !payload.locked) {
-        await Util.lockIssue(octokit, context, lockReason)
+        core.info(
+          `Lock issue${lockReason ? ` with reason: ${lockReason}` : ''}`,
+        )
+        await octokit.issues.lock({
+          ...params,
+          lock_reason: lockReason,
+        })
       }
 
       if (unlock && payload.locked) {
@@ -100,30 +90,7 @@ export namespace Action {
       }
 
       if (labels) {
-        const labelsToAdd: string[] = []
-        const labelsToRemove: string[] = []
-        const processLabel = (raw: string) => {
-          const label = mustache.render(raw, data)
-          if (label.startsWith('-')) {
-            labelsToRemove.push(label.substr(1))
-          } else {
-            labelsToAdd.push(label)
-          }
-        }
-
-        if (Array.isArray(labels)) {
-          labels.forEach((item) => processLabel(item))
-        } else {
-          processLabel(labels)
-        }
-
-        if (labelsToAdd.length) {
-          octokit.issues.addLabels({ ...params, labels: labelsToAdd })
-        }
-
-        labelsToRemove.forEach((name) => {
-          octokit.issues.removeLabel({ ...params, name })
-        })
+        await Util.label(octokit, labels, data)
       }
     } catch (e) {
       core.error(e)
