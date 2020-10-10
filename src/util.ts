@@ -172,7 +172,7 @@ export namespace Util {
     const payload = (context.payload.issue || context.payload.pull_request)!
     return octokit.graphql(mutation, {
       input: {
-        issueId: payload.number,
+        issueId: payload.node_id,
         clientMutationId: 'top3 pinned',
       },
       headers: {
