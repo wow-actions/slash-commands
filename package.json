@@ -1,9 +1,9 @@
 {
-  "name": "custom-slash-commands",
+  "name": "slash-commands",
   "description": "A Github Action to perform commands when Issues or Pull Requests are commented with slash commands.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
-  "repository": "https://github.com/bubkoo/custom-slash-commands",
+  "repository": "https://github.com/bubkoo/slash-commands",
   "author": "bubkoo <bubkoo.wy@gmail.com>",
   "license": "MIT",
   "files": [

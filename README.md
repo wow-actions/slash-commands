@@ -28,7 +28,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: bubkoo/custom-slash-commands@v1
+      - uses: bubkoo/slash-commands@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONFIG_FILE: your-config-file-path # .github/slash-commands.yml
