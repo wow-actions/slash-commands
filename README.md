@@ -7,13 +7,14 @@
 This Github Action performs certain commands when an issue or pull request is commented with slash command. The following commands are supported:
 
 - Post a comment (`comment` and `reactions` option)
+- Add or remove labels (`labels` option), label prefixed with `-` will be removed, others will be added
 - Close (`close` option)
 - Reopen (`open` option)
 - Lock with an optional lock reason (`lock` and `lockReason` options)
 - Unlock (`unlock` option)
-- Pin (`pin` option, pin an issue)
-- UnPin (`unpin` option, unpin an issue)
-- Add or remove labels (`labels` option), label prefixed with `-` will be removed, other label will be added.
+- Pin an issue (`pin` option)
+- UnPin an issue (`unpin` option)
+- Dispatch the command (`dispatch` option). You can use this command to trigger a webhook event called `repository_dispatch` when you want activity that happens outside of GitHub to trigger a GitHub Actions workflow or GitHub App webhook. You must configure your GitHub Actions workflow or GitHub App to run when the `repository_dispatch` event occurs. And the `event_type` is the command name, the `client_payload` contains command args.
 
 ## Usage
 

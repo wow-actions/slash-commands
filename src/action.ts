@@ -60,6 +60,7 @@ export namespace Action {
         labels,
         pin,
         unpin,
+        dispatch,
       } = actions
 
       const data = { args, input: args.join(' ') }
@@ -98,6 +99,14 @@ export namespace Action {
 
       if (labels) {
         await Util.label(octokit, labels, data)
+      }
+
+      if (dispatch) {
+        await octokit.repos.createDispatchEvent({
+          ...context.repo,
+          event_type: command,
+          client_payload: { args: data.args },
+        })
       }
 
       core.setOutput('command', command)

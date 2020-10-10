@@ -13,6 +13,7 @@ export namespace Config {
     lockReason?: LockReason
     pin?: boolean
     unpin?: boolean
+    dispatch?: boolean
     comment?: string | string[]
     reactions?: string | string[]
     labels?: string | string[]
