@@ -147,11 +147,17 @@ export namespace Util {
       await octokit.issues.addLabels({ ...params, labels: labelsToAdd })
     }
 
-    await Promise.all(
-      labelsToRemove.map(async (name) => {
-        await octokit.issues.removeLabel({ ...params, name })
-      }),
-    )
+    if (labelsToRemove.length) {
+      const removeAll = labelsToRemove.some((label) => label === '*')
+      const labels = removeAll
+        ? (payload.labels as string[]) || []
+        : labelsToRemove
+      await Promise.all(
+        labels.map(async (name) => {
+          await octokit.issues.removeLabel({ ...params, name })
+        }),
+      )
+    }
   }
 
   export async function assign(
@@ -161,23 +167,47 @@ export namespace Util {
   ) {
     const context = github.context
     const payload = (context.payload.issue || context.payload.pull_request)!
+    const assigneesToAdd: string[] = []
+    const assigneesToRemove: string[] = []
 
     const process = (raw: string) => {
+      const username = (user: string) =>
+        user.startsWith('@') ? user.substr(1) : user
+
       return mustache
         .render(raw, data)
         .split(/\s+/g)
-        .map((item) => (item[0] === '@' ? item.substr(1) : item))
+        .map((item) => {
+          if (item.startsWith('-')) {
+            assigneesToRemove.push(username(item.substr(1)))
+          } else {
+            assigneesToAdd.push(username(item))
+          }
+        })
     }
 
-    const assignees = Array.isArray(users)
-      ? users.reduce((memo, item) => [...memo, ...process(item)], [])
-      : process(users)
+    if (Array.isArray(users)) {
+      users.forEach(process)
+    } else {
+      process(users)
+    }
 
-    return octokit.issues.addAssignees({
-      ...context.repo,
-      assignees,
-      issue_number: payload.number,
-    })
+    if (assigneesToRemove.length) {
+      const removeAll = assigneesToRemove.some((user) => user === '*')
+      await octokit.issues.removeAssignees({
+        ...context.repo,
+        assignees: removeAll ? payload.assignees : assigneesToRemove,
+        issue_number: payload.number,
+      })
+    }
+
+    if (assigneesToAdd.length) {
+      await octokit.issues.addAssignees({
+        ...context.repo,
+        assignees: assigneesToAdd,
+        issue_number: payload.number,
+      })
+    }
   }
 
   export async function pin(

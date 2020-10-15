@@ -7,14 +7,14 @@
 This Github Action performs certain commands when an issue or pull request is commented with slash command. The following commands are supported:
 
 - Post a comment (`comment` and `reactions` option)
-- Add or remove labels (`labels` option), label prefixed with `-` will be removed, others will be added
+- Add or remove labels (`label` option), label prefixed with `-` will be removed, others will be added. User `'-*'` to remove all labels.
 - Close (`close` option)
 - Reopen (`open` option)
 - Lock with an optional lock reason (`lock` and `lockReason` options)
 - Unlock (`unlock` option)
 - Pin an issue (`pin` option)
 - UnPin an issue (`unpin` option)
-- Assign issues/PRs(`assign` option)
+- Assign issues/PRs(`assign` option), username prefixed with `-` will be removed from assignees, others will be added. User `'-*'` to remove all assignees.
 - Dispatch the command (`dispatch` option). You can use this command to trigger a webhook event called `repository_dispatch` when you want activity that happens outside of GitHub to trigger a GitHub Actions workflow or GitHub App webhook. You must configure your GitHub Actions workflow or GitHub App to run when the `repository_dispatch` event occurs. And the `event_type` is the command name, the `client_payload` contains command args.
 
 ## Usage
@@ -93,7 +93,7 @@ unheated:
   unlock: true
 
 label:
-  labels:
+  label:
     # Add custom label
     - static-label
     # Space separated labels
@@ -104,17 +104,25 @@ label:
     - '{{ args.2 }}'
 
 unlabel:
-  labels:
+  label:
     # Remove custom label
     - -static-label
     # Remove labels from args
     - '-{{ args.0 }}'
     - '-{{ args.1 }}'
     - '-{{ args.2 }}'
+relabel:
+  label:
+    # Remove all labels
+    - -*
+    # add label from args
+    - '{{ input }}'
 
 handover:
-  # assign issues/PRs to the given users
-  assign: '{{ input }}'
+  # handover issues/PRs to the given users
+  assign:
+    - '-*' # first remove all the old assignees
+    - '{{ input }}'
 assign:
   # assign issues/PRs to Jhon and the given users
   assign:

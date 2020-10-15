@@ -57,7 +57,7 @@ export namespace Action {
         lock,
         unlock,
         lockReason,
-        labels,
+        label,
         pin,
         unpin,
         assign,
@@ -98,8 +98,8 @@ export namespace Action {
         await octokit.issues.unlock({ ...params })
       }
 
-      if (labels) {
-        await Util.label(octokit, labels, data)
+      if (label) {
+        await Util.label(octokit, label, data)
       }
 
       if (assign) {

@@ -10,20 +10,24 @@ heated:
   lockReason: too heated
   reactions: ['eyes', 'heart']
   comment: The thread has been temporarily locked.
-
 unheated:
   unlock: true
 
 label:
-  labels:
+  label:
     - static-label
     - 'label-1 label-2'
     - '{{ args.0 }}'
     - '{{ args.1 }}'
     - '{{ args.2 }}'
-
 unlabel:
-  labels: -static-label
+  label: -static-label
+relabel:
+  label:
+    # Remove all labels
+    - -*
+    # add label from args
+    - '{{ input }}'
 
 handover:
   assign: '{{ input }}'

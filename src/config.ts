@@ -16,7 +16,7 @@ export namespace Config {
     dispatch?: boolean
     comment?: string | string[]
     reactions?: string | string[]
-    labels?: string | string[]
+    label?: string | string[]
     assign?: string | string[]
   }
 
