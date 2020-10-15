@@ -128,11 +128,17 @@ export namespace Util {
       mustache
         .render(raw, data)
         .split(/\s+/)
-        .forEach((label) => {
+        .forEach((item) => {
+          let label = item.trim()
           if (label.startsWith('-')) {
-            labelsToRemove.push(label.substr(1))
+            label = label.substr(1)
+            if (label.length) {
+              labelsToRemove.push()
+            }
           } else {
-            labelsToAdd.push(label)
+            if (label.length) {
+              labelsToAdd.push(label)
+            }
           }
         })
     }
@@ -173,8 +179,10 @@ export namespace Util {
     const assigneesToRemove: string[] = []
 
     const process = (raw: string) => {
-      const username = (user: string) =>
-        user.startsWith('@') ? user.substr(1) : user
+      const username = (user: string) => {
+        const ret = user.trim()
+        return ret.startsWith('@') ? ret.substr(1) : ret
+      }
 
       return mustache
         .render(raw, data)
@@ -196,7 +204,7 @@ export namespace Util {
 
     if (assigneesToRemove.length) {
       const removeAll = assigneesToRemove.some((user) => user === '*')
-      let assignees = assigneesToRemove
+      let assignees = assigneesToRemove.filter((user) => user.length > 0)
       if (removeAll && payload.assignees) {
         assignees = payload.assignees.map((item: any) => item.login)
       }
@@ -211,7 +219,7 @@ export namespace Util {
     if (assigneesToAdd.length) {
       await octokit.issues.addAssignees({
         ...context.repo,
-        assignees: assigneesToAdd,
+        assignees: assigneesToAdd.filter((user) => user.length > 0),
         issue_number: payload.number,
       })
     }
