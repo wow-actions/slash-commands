@@ -127,7 +127,7 @@ assign:
   # assign issues/PRs to Jhon and the given users
   assign:
     - Jhon
-    -'{{ input }}'
+    - '{{ input }}'
 
 # Optionally, specify commands just for issues
 # --------------------------------------------
@@ -154,7 +154,7 @@ issues:
     # Post a comment, `{{ author }}` is author placeholder
     comment: >
       @{{ author }}
-
+      
       In order to communicate effectively, we have a certain format requirement for the issue, your issue is automatically closed because there is no recurring step or reproducible warehouse, and will be REOPEN after the offer.
 
 
