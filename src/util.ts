@@ -143,11 +143,37 @@ export namespace Util {
     }
 
     if (labelsToAdd.length) {
-      octokit.issues.addLabels({ ...params, labels: labelsToAdd })
+      await octokit.issues.addLabels({ ...params, labels: labelsToAdd })
     }
 
-    labelsToRemove.forEach((name) => {
-      octokit.issues.removeLabel({ ...params, name })
+    await Promise.all(
+      labelsToRemove.map(async (name) => {
+        await octokit.issues.removeLabel({ ...params, name })
+      }),
+    )
+  }
+
+  export async function assign(
+    octokit: ReturnType<typeof getOctokit>,
+    users: string | string[],
+  ) {
+    const context = github.context
+    const payload = (context.payload.issue || context.payload.pull_request)!
+
+    const process = (raw: string) => {
+      return raw
+        .split(/\s+/g)
+        .map((item) => (item[0] === '@' ? item.substr(1) : item))
+    }
+
+    const assignees = Array.isArray(users)
+      ? users.reduce((memo, item) => [...memo, ...process(item)], [])
+      : process(users)
+
+    return octokit.issues.addAssignees({
+      ...context.repo,
+      assignees,
+      issue_number: payload.number,
     })
   }
 

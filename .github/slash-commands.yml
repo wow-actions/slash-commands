@@ -25,6 +25,11 @@ label:
 unlabel:
   labels: -static-label
 
+handover:
+  assign: '{{ input }}'
+assign:
+  assign: '{{ input }}'
+
 issues:
   pin:
     pin: true

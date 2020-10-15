@@ -14,6 +14,7 @@ This Github Action performs certain commands when an issue or pull request is co
 - Unlock (`unlock` option)
 - Pin an issue (`pin` option)
 - UnPin an issue (`unpin` option)
+- Assign issues/PRs(`assign` option)
 - Dispatch the command (`dispatch` option). You can use this command to trigger a webhook event called `repository_dispatch` when you want activity that happens outside of GitHub to trigger a GitHub Actions workflow or GitHub App webhook. You must configure your GitHub Actions workflow or GitHub App to run when the `repository_dispatch` event occurs. And the `event_type` is the command name, the `client_payload` contains command args.
 
 ## Usage
@@ -110,6 +111,11 @@ unlabel:
     - '-{{ args.0 }}'
     - '-{{ args.1 }}'
     - '-{{ args.2 }}'
+
+handover:
+  assign: '{{ input }}'
+assign:
+  assign: '{{ input }}'
 
 # Optionally, specify commands just for issues
 # --------------------------------------------

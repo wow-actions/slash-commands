@@ -60,6 +60,7 @@ export namespace Action {
         labels,
         pin,
         unpin,
+        assign,
         dispatch,
       } = actions
 
@@ -99,6 +100,10 @@ export namespace Action {
 
       if (labels) {
         await Util.label(octokit, labels, data)
+      }
+
+      if (assign) {
+        await Util.assign(octokit, assign)
       }
 
       if (dispatch) {
