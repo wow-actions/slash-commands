@@ -17,6 +17,7 @@ export namespace Config {
     comment?: string | string[]
     reactions?: string | string[]
     label?: string | string[]
+    labels?: string | string[]
     assign?: string | string[]
   }
 

@@ -149,9 +149,11 @@ export namespace Util {
 
     if (labelsToRemove.length) {
       const removeAll = labelsToRemove.some((label) => label === '*')
-      const labels = removeAll
-        ? (payload.labels as string[]) || []
-        : labelsToRemove
+      let labels: string[] = labelsToRemove
+      if (removeAll && payload.labels) {
+        labels = payload.labels.map((item: any) => item.name)
+      }
+
       await Promise.all(
         labels.map(async (name) => {
           await octokit.issues.removeLabel({ ...params, name })
@@ -194,9 +196,14 @@ export namespace Util {
 
     if (assigneesToRemove.length) {
       const removeAll = assigneesToRemove.some((user) => user === '*')
+      let assignees = assigneesToRemove
+      if (removeAll && payload.assignees) {
+        assignees = payload.assignees.map((item: any) => item.login)
+      }
+
       await octokit.issues.removeAssignees({
         ...context.repo,
-        assignees: removeAll ? payload.assignees : assigneesToRemove,
+        assignees,
         issue_number: payload.number,
       })
     }

@@ -58,6 +58,7 @@ export namespace Action {
         unlock,
         lockReason,
         label,
+        labels,
         pin,
         unpin,
         assign,
@@ -100,6 +101,10 @@ export namespace Action {
 
       if (label) {
         await Util.label(octokit, label, data)
+      }
+
+      if (labels) {
+        await Util.label(octokit, labels, data)
       }
 
       if (assign) {
