@@ -133,7 +133,7 @@ export namespace Util {
           if (label.startsWith('-')) {
             label = label.substr(1)
             if (label.length) {
-              labelsToRemove.push()
+              labelsToRemove.push(label)
             }
           } else {
             if (label.length) {
@@ -188,10 +188,17 @@ export namespace Util {
         .render(raw, data)
         .split(/\s+/g)
         .map((item) => {
-          if (item.startsWith('-')) {
-            assigneesToRemove.push(username(item.substr(1)))
+          let user = item.trim()
+          if (user.startsWith('-')) {
+            user = username(user.substr(1))
+            if (user.length) {
+              assigneesToRemove.push(user)
+            }
           } else {
-            assigneesToAdd.push(username(item))
+            user = username(user)
+            if (user.length) {
+              assigneesToAdd.push(user)
+            }
           }
         })
     }
@@ -204,7 +211,7 @@ export namespace Util {
 
     if (assigneesToRemove.length) {
       const removeAll = assigneesToRemove.some((user) => user === '*')
-      let assignees = assigneesToRemove.filter((user) => user.length > 0)
+      let assignees = assigneesToRemove
       if (removeAll && payload.assignees) {
         assignees = payload.assignees.map((item: any) => item.login)
       }
@@ -219,7 +226,7 @@ export namespace Util {
     if (assigneesToAdd.length) {
       await octokit.issues.addAssignees({
         ...context.repo,
-        assignees: assigneesToAdd.filter((user) => user.length > 0),
+        assignees: assigneesToAdd,
         issue_number: payload.number,
       })
     }
