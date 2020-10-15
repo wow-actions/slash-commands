@@ -25,12 +25,14 @@ unlabel:
 relabel:
   label:
     # Remove all labels
-    - -*
+    - '-*'
     # add label from args
     - '{{ input }}'
 
 handover:
-  assign: '{{ input }}'
+  assign:
+    - '-*'
+    - '{{ input }}'
 assign:
   assign:
     - Jhon
