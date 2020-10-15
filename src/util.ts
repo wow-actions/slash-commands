@@ -125,15 +125,16 @@ export namespace Util {
     const payload = (context.payload.issue || context.payload.pull_request)!
     const params = { ...context.repo, issue_number: payload.number }
     const process = (raw: string) => {
-      const handle = (label: string) => {
-        if (label.startsWith('-')) {
-          labelsToRemove.push(label.substr(1))
-        } else {
-          labelsToAdd.push(label)
-        }
-      }
-
-      mustache.render(raw, data).split(/\s+/).forEach(handle)
+      mustache
+        .render(raw, data)
+        .split(/\s+/)
+        .forEach((label) => {
+          if (label.startsWith('-')) {
+            labelsToRemove.push(label.substr(1))
+          } else {
+            labelsToAdd.push(label)
+          }
+        })
     }
 
     if (Array.isArray(labels)) {
@@ -156,12 +157,14 @@ export namespace Util {
   export async function assign(
     octokit: ReturnType<typeof getOctokit>,
     users: string | string[],
+    data: any,
   ) {
     const context = github.context
     const payload = (context.payload.issue || context.payload.pull_request)!
 
     const process = (raw: string) => {
-      return raw
+      return mustache
+        .render(raw, data)
         .split(/\s+/g)
         .map((item) => (item[0] === '@' ? item.substr(1) : item))
     }

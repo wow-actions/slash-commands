@@ -103,7 +103,7 @@ export namespace Action {
       }
 
       if (assign) {
-        await Util.assign(octokit, assign)
+        await Util.assign(octokit, assign, data)
       }
 
       if (dispatch) {
