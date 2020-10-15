@@ -28,7 +28,9 @@ unlabel:
 handover:
   assign: '{{ input }}'
 assign:
-  assign: '{{ input }}'
+  assign:
+    - Jhon
+    -'{{ input }}'
 
 issues:
   pin:
