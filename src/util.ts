@@ -7,11 +7,13 @@ import { Reaction } from './reaction'
 
 export namespace Util {
   // https://regex101.com/r/3PkLfT/1
-  const TOKENISE_REGEX = /\S+="[^"\\]*(?:\\.[^"\\]*)*"|"[^"\\]*(?:\\.[^"\\]*)*"|\S+/g
+  const TOKENISE_REGEX =
+    /\S+="[^"\\]*(?:\\.[^"\\]*)*"|"[^"\\]*(?:\\.[^"\\]*)*"|\S+/g
 
   export function tokeniseCommand(command: string) {
     let matches
     const output: string[] = []
+    // eslint-disable-next-line no-cond-assign
     while ((matches = TOKENISE_REGEX.exec(command))) {
       output.push(matches[0])
     }
@@ -28,23 +30,23 @@ export namespace Util {
   }
 
   export function pickComment(
-    comment: string | string[],
+    content: string | string[],
     args?: { [key: string]: any },
   ) {
     let result: string
-    if (typeof comment === 'string' || comment instanceof String) {
-      result = comment.toString()
+    if (typeof content === 'string' || content instanceof String) {
+      result = content.toString()
     } else {
-      const pos = random(0, comment.length, false)
-      result = comment[pos] || comment[0]
+      const pos = random(0, content.length, false)
+      result = content[pos] || content[0]
     }
 
     return args ? mustache.render(result, args) : result
   }
 
   export function isValidEvent(event: string, action?: string) {
-    const context = github.context
-    const payload = context.payload
+    const { context } = github
+    const { payload } = context
     if (event === context.eventName) {
       return action == null || action === payload.action
     }
@@ -56,12 +58,12 @@ export namespace Util {
     path: string,
   ) {
     try {
-      const response = await octokit.repos.getContent({
+      const response = await octokit.rest.repos.getContent({
         ...github.context.repo,
         path,
       })
 
-      const content = response.data.content
+      const { content } = response.data as any
       return Buffer.from(content, 'base64').toString()
     } catch (err) {
       return null
@@ -72,14 +74,14 @@ export namespace Util {
     octokit: ReturnType<typeof getOctokit>,
     callback: (() => void) | (() => Promise<any>),
   ) {
-    const context = github.context
+    const { context } = github
     const payload = context.payload.issue || context.payload.pull_request
     if (payload && payload.locked) {
       const params = { ...context.repo, issue_number: payload.number }
       const lockReason = payload.active_lock_reason as Config.LockReason
-      await octokit.issues.unlock({ ...params })
+      await octokit.rest.issues.unlock({ ...params })
       await callback()
-      await octokit.issues.lock({
+      await octokit.rest.issues.lock({
         ...params,
         lock_reason: lockReason,
       })
@@ -92,18 +94,18 @@ export namespace Util {
     octokit: ReturnType<typeof getOctokit>,
     content: string | string[],
     reactions: string | string[] | undefined,
-    data: any,
+    metadata: any,
   ) {
-    const context = github.context
+    const { context } = github
     const payload = (context.payload.issue || context.payload.pull_request)!
     const params = { ...context.repo, issue_number: payload.number }
     const body = pickComment(content, {
-      ...data,
+      ...metadata,
       author: payload.user.login,
     })
 
     return ensureUnlock(octokit, async () => {
-      const { data } = await octokit.issues.createComment({
+      const { data } = await octokit.rest.issues.createComment({
         ...params,
         body,
       })
@@ -117,28 +119,26 @@ export namespace Util {
   export async function label(
     octokit: ReturnType<typeof getOctokit>,
     labels: string | string[],
-    data: any,
+    metadata: any,
   ) {
     const labelsToAdd: string[] = []
     const labelsToRemove: string[] = []
-    const context = github.context
+    const { context } = github
     const payload = (context.payload.issue || context.payload.pull_request)!
     const params = { ...context.repo, issue_number: payload.number }
     const process = (raw: string) => {
       mustache
-        .render(raw, data)
+        .render(raw, metadata)
         .split(/\s+/)
         .forEach((item) => {
-          let label = item.trim()
-          if (label.startsWith('-')) {
-            label = label.substr(1)
-            if (label.length) {
-              labelsToRemove.push(label)
+          let name = item.trim()
+          if (name.startsWith('-')) {
+            name = name.substr(1)
+            if (name.length) {
+              labelsToRemove.push(name)
             }
-          } else {
-            if (label.length) {
-              labelsToAdd.push(label)
-            }
+          } else if (name.length) {
+            labelsToAdd.push(name)
           }
         })
     }
@@ -150,19 +150,19 @@ export namespace Util {
     }
 
     if (labelsToAdd.length) {
-      await octokit.issues.addLabels({ ...params, labels: labelsToAdd })
+      await octokit.rest.issues.addLabels({ ...params, labels: labelsToAdd })
     }
 
     if (labelsToRemove.length) {
-      const removeAll = labelsToRemove.some((label) => label === '*')
-      let labels: string[] = labelsToRemove
+      const removeAll = labelsToRemove.some((item) => item === '*')
+      let items: string[] = labelsToRemove
       if (removeAll && payload.labels) {
-        labels = payload.labels.map((item: any) => item.name)
+        items = payload.labels.map((item: any) => item.name)
       }
 
       await Promise.all(
-        labels.map(async (name) => {
-          await octokit.issues.removeLabel({ ...params, name })
+        items.map(async (name) => {
+          await octokit.rest.issues.removeLabel({ ...params, name })
         }),
       )
     }
@@ -173,7 +173,7 @@ export namespace Util {
     users: string | string[],
     data: any,
   ) {
-    const context = github.context
+    const { context } = github
     const payload = (context.payload.issue || context.payload.pull_request)!
     const assigneesToAdd: string[] = []
     const assigneesToRemove: string[] = []
@@ -187,7 +187,7 @@ export namespace Util {
       return mustache
         .render(raw, data)
         .split(/\s+/g)
-        .map((item) => {
+        .forEach((item) => {
           let user = item.trim()
           if (user.startsWith('-')) {
             user = username(user.substr(1))
@@ -216,7 +216,7 @@ export namespace Util {
         assignees = payload.assignees.map((item: any) => item.login)
       }
 
-      await octokit.issues.removeAssignees({
+      await octokit.rest.issues.removeAssignees({
         ...context.repo,
         assignees,
         issue_number: payload.number,
@@ -224,7 +224,7 @@ export namespace Util {
     }
 
     if (assigneesToAdd.length) {
-      await octokit.issues.addAssignees({
+      await octokit.rest.issues.addAssignees({
         ...context.repo,
         assignees: assigneesToAdd,
         issue_number: payload.number,
@@ -253,7 +253,7 @@ export namespace Util {
           }
         }`
 
-    const context = github.context
+    const { context } = github
     const payload = (context.payload.issue || context.payload.pull_request)!
     return octokit.graphql(mutation, {
       input: {

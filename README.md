@@ -1,6 +1,7 @@
-# Custom Slash Commands
+<h1 align="center">Slash Commands</h1>
+<p align="center"><strong>Perform commands when Issues or Pull Requests are commented with slash commands</strong></p>
 
-> A Github Action to perform commands when Issues or Pull Requests are commented with slash commands. Slash commands are lines that start with `/` in comments on Issues or Pull Requests.
+> Slash commands are lines that start with `/` in comments on Issues or Pull Requests.
 
 ## How It Works
 
@@ -30,13 +31,13 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: bubkoo/slash-commands@v1
+      - uses: wow-actions/slash-commands@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONFIG_FILE: your-config-file-path # .github/slash-commands.yml
 ```
 
-### Options
+### Inputs
 
 - `GITHUB_TOKEN`: Your GitHub token for authentication.
 - `CONFIG_FILE`: Path to command config file, specify a yaml file with the following structure:

@@ -6,7 +6,7 @@ import { Config } from './config'
 export namespace Action {
   export async function run() {
     try {
-      const context = github.context
+      const { context } = github
       const payload = context.payload.issue || context.payload.pull_request
       const commentBody = context.payload.comment!.body as string
 
@@ -81,22 +81,22 @@ export namespace Action {
       }
 
       if (open && payload.state === 'closed') {
-        await octokit.issues.update({ ...params, state: 'open' })
+        await octokit.rest.issues.update({ ...params, state: 'open' })
       }
 
       if (close && payload.state === 'open') {
-        await octokit.issues.update({ ...params, state: 'closed' })
+        await octokit.rest.issues.update({ ...params, state: 'closed' })
       }
 
       if (lock && !payload.locked) {
-        await octokit.issues.lock({
+        await octokit.rest.issues.lock({
           ...params,
           lock_reason: lockReason,
         })
       }
 
       if (unlock && payload.locked) {
-        await octokit.issues.unlock({ ...params })
+        await octokit.rest.issues.unlock({ ...params })
       }
 
       if (label) {
@@ -112,7 +112,7 @@ export namespace Action {
       }
 
       if (dispatch) {
-        await octokit.repos.createDispatchEvent({
+        await octokit.rest.repos.createDispatchEvent({
           ...context.repo,
           event_type: command,
           client_payload: { args: data.args },
