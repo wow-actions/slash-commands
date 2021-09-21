@@ -18,4 +18,4 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CONFIG_FILE: .github/slash-commands.yml
+          CONFIG_FILE: .github/workflows/config/slash-commands.yml
